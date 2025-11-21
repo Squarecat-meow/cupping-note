@@ -1,3 +1,22 @@
 {
-    "name": "@cupping-note/backend"
+  "name": "@cupping-note/backend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.6",
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "^1.1.5",
+    "drizzle-orm": "^0.44.7",
+    "hono": "^4.10.6",
+    "postgres": "^3.4.7",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.7",
+    "tsx": "^4.20.6"
+  }
 }
