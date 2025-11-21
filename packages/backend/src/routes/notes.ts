@@ -7,6 +7,7 @@ import { notes } from '../schema/notes.js'
 const getNotesRoute = createRoute({
   method: 'get',
   path: '/notes',
+  tags: ['Notes'],
   summary: '노트 목록 조회',
   responses: {
     200: {
@@ -28,6 +29,7 @@ const getNotesRoute = createRoute({
 const createNoteRoute = createRoute({
   method: 'post',
   path: '/notes',
+  tags: ['Notes'],
   summary: '노트 생성',
   request: {
     body: {
@@ -64,9 +66,53 @@ const createNoteRoute = createRoute({
   },
 })
 
+const updateNoteRoute = createRoute({
+  method: 'patch',
+  path: '/notes/{id}',
+  tags: ['Notes'],
+  summary: '노트 수정',
+  request: {
+    params: z.object({
+      id: z.string().regex(/^\d+$/).transform(Number).openapi({ description: '노트 ID' }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            name: z.string().optional().openapi({ description: '노트 이름' }),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: '노트 수정 성공',
+      content: {
+        'application/json': {
+          schema: z.object({
+            id: z.number().openapi({ description: '수정된 노트 ID' }),
+          }),
+        },
+      },
+    },
+    404: {
+      description: '노트 없음',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+    },
+  },
+})
+
 const deleteNoteRoute = createRoute({
   method: 'delete',
   path: '/notes/{id}',
+  tags: ['Notes'],
   summary: '노트 삭제',
   request: {
     params: z.object({
@@ -106,6 +152,14 @@ export default (app: OpenAPIHono) => {
 
     if (!note) return c.json({ message: '노트 생성에 실패했습니다.' }, 500)
     return c.json({ id: note.id }, 201)
+  })
+
+  app.openapi(updateNoteRoute, async (c) => {
+    const [{ id }, values] = [c.req.valid('param'), c.req.valid('json')]
+    const [note] = await db.update(notes).set(values).where(eq(notes.id, id)).returning()
+
+    if (!note) return c.json({ message: '노트를 찾을 수 없습니다.' }, 404)
+    return c.json({ id: note.id }, 200)
   })
 
   app.openapi(deleteNoteRoute, async (c) => {
