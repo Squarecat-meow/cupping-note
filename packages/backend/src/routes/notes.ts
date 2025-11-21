@@ -18,6 +18,9 @@ const getNotesRoute = createRoute({
             z.object({
               id: z.number().openapi({ description: '노트 ID' }),
               name: z.string().openapi({ description: '노트 이름' }),
+              recipe: z.number().openapi({ description: '레시피 ID' }),
+              bean: z.number().openapi({ description: '원두 ID' }),
+              content: z.string().openapi({ description: '노트 내용' }),
             }),
           ),
         },
@@ -37,6 +40,9 @@ const createNoteRoute = createRoute({
         'application/json': {
           schema: z.object({
             name: z.string().openapi({ description: '노트 이름' }),
+            recipe: z.number().openapi({ description: '레시피 ID' }),
+            bean: z.number().openapi({ description: '원두 ID' }),
+            content: z.string().openapi({ description: '노트 내용' }),
           }),
         },
       },
@@ -80,6 +86,9 @@ const updateNoteRoute = createRoute({
         'application/json': {
           schema: z.object({
             name: z.string().optional().openapi({ description: '노트 이름' }),
+            recipe: z.number().optional().openapi({ description: '레시피 ID' }),
+            bean: z.number().optional().openapi({ description: '원두 ID' }),
+            content: z.string().optional().openapi({ description: '노트 내용' }),
           }),
         },
       },
@@ -147,8 +156,8 @@ export default (app: OpenAPIHono) => {
   app.openapi(getNotesRoute, async (c) => c.json(await db.select().from(notes)))
 
   app.openapi(createNoteRoute, async (c) => {
-    const { name } = c.req.valid('json')
-    const [note] = await db.insert(notes).values({ name }).returning()
+    const values = c.req.valid('json')
+    const [note] = await db.insert(notes).values(values).returning()
 
     if (!note) return c.json({ message: '노트 생성에 실패했습니다.' }, 500)
     return c.json({ id: note.id }, 201)
