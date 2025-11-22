@@ -11,4 +11,5 @@ export const notes = pgTable('notes', {
   bean: integer('bean')
     .notNull()
     .references(() => beans.id),
+  content: text('content').notNull(),
 })
