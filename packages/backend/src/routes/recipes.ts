@@ -18,6 +18,15 @@ const getRecipesRoute = createRoute({
             z.object({
               id: z.number().openapi({ description: '레시피 ID' }),
               name: z.string().openapi({ description: '레시피 이름' }),
+              description: z.string().openapi({ description: '레시피 설명' }),
+              instructions: z.string().openapi({ description: '레시피 상세 설명' }),
+              waterAmount: z.number().openapi({ description: '물 양 (ml)' }),
+              beanAmount: z.number().openapi({ description: '원두 양 (g)' }),
+              brewTime: z.number().openapi({ description: '추출 시간 (초)' }),
+              temperature: z.number().openapi({ description: '물 온도 (°C)' }),
+              grinderType: z.enum(['manual', 'electric']).openapi({ description: '그라인더 타입' }),
+              grinderName: z.string().nullable().openapi({ description: '그라인더 이름' }),
+              grinderClicks: z.number().nullable().openapi({ description: '그라인더 분쇄도 (클릭 수)' }),
             }),
           ),
         },
@@ -37,6 +46,15 @@ const createRecipeRoute = createRoute({
         'application/json': {
           schema: z.object({
             name: z.string().openapi({ description: '레시피 이름' }),
+            description: z.string().openapi({ description: '레시피 설명' }),
+            instructions: z.string().openapi({ description: '레시피 상세 설명' }),
+            waterAmount: z.number().openapi({ description: '물 양 (ml)' }),
+            beanAmount: z.number().openapi({ description: '원두 양 (g)' }),
+            brewTime: z.number().openapi({ description: '추출 시간 (초)' }),
+            temperature: z.number().openapi({ description: '물 온도 (°C)' }),
+            grinderType: z.enum(['manual', 'electric']).openapi({ description: '그라인더 타입' }),
+            grinderName: z.string().optional().openapi({ description: '그라인더 이름' }),
+            grinderClicks: z.number().optional().openapi({ description: '그라인더 분쇄도 (클릭 수)' }),
           }),
         },
       },
@@ -80,6 +98,15 @@ const updateRecipeRoute = createRoute({
         'application/json': {
           schema: z.object({
             name: z.string().optional().openapi({ description: '레시피 이름' }),
+            description: z.string().optional().openapi({ description: '레시피 설명' }),
+            instructions: z.string().optional().openapi({ description: '레시피 상세 설명' }),
+            waterAmount: z.number().optional().openapi({ description: '물 양 (ml)' }),
+            beanAmount: z.number().optional().openapi({ description: '원두 양 (g)' }),
+            brewTime: z.number().optional().openapi({ description: '추출 시간 (초)' }),
+            temperature: z.number().optional().openapi({ description: '물 온도 (°C)' }),
+            grinderType: z.enum(['manual', 'electric']).optional().openapi({ description: '그라인더 타입' }),
+            grinderName: z.string().optional().openapi({ description: '그라인더 이름' }),
+            grinderClicks: z.number().optional().openapi({ description: '그라인더 분쇄도 (클릭 수)' }),
           }),
         },
       },
@@ -147,8 +174,8 @@ export default (app: OpenAPIHono) => {
   app.openapi(getRecipesRoute, async (c) => c.json(await db.select().from(recipes)))
 
   app.openapi(createRecipeRoute, async (c) => {
-    const { name } = c.req.valid('json')
-    const [recipe] = await db.insert(recipes).values({ name }).returning()
+    const values = c.req.valid('json')
+    const [recipe] = await db.insert(recipes).values(values).returning()
 
     if (!recipe) return c.json({ message: '레시피 생성에 실패했습니다.' }, 500)
     return c.json({ id: recipe.id }, 201)
